@@ -1,5 +1,6 @@
 import dash
 from dash import dcc, html, Input, Output
+import dash_bootstrap_components as dbc
 import pandas as pd
 import plotly.express as px
 
@@ -8,48 +9,42 @@ df = pd.read_csv("Life_Expectancy_Data.csv")
 df.columns = df.columns.str.strip()
 df["BMI"] = pd.to_numeric(df["BMI"], errors="coerce")
 
-# Feature engineering: Calculate global stats
+# Feature engineering
 global_avg_life = df['Life expectancy'].mean()
 highest_life_country = df.loc[df['Life expectancy'].idxmax()]['Country']
 lowest_gdp_country = df.loc[df['GDP'].idxmin()]['Country']
 highest_mortality_country = df.loc[df['Adult Mortality'].idxmax()]['Country']
-
-# Latest year data for choropleth map
 latest_df = df.sort_values("Year").groupby("Country").tail(1)
 
-# Initialize Dash app
-app = dash.Dash(__name__)
-app.title = " Life Expectancy Dashboard"
+# Dash app
+app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
+app.title = "Life Expectancy Dashboard"
 
-# Enhanced color palette
 colors = {
-    'primary': '#1e3a8a',      # Deep blue
-    'secondary': '#7c3aed',    # Purple
-    'accent': '#06b6d4',       # Cyan
-    'success': '#10b981',      # Green
-    'warning': '#f59e0b',      # Amber
-    'danger': '#ef4444',       # Red
-    'background': '#f8fafc',   # Light gray-blue
-    'card': '#ffffff',         # White
-    'text': '#1f2937',         # Dark gray
-    'text_light': '#6b7280'    # Light gray
+    'primary': '#1e3a8a',
+    'secondary': '#7c3aed',
+    'accent': '#06b6d4',
+    'success': '#10b981',
+    'warning': '#f59e0b',
+    'danger': '#ef4444',
+    'background': '#f8fafc',
+    'card': '#ffffff',
+    'text': '#1f2937',
+    'text_light': '#6b7280'
 }
 
 card_style = {
-    "background": f"linear-gradient(135deg, {colors['primary']} 0%, {colors['secondary']} 100%)",
     "padding": "20px",
-    "margin": "10px",
+    "margin": "10px 0",
     "borderRadius": "15px",
     "boxShadow": "0px 8px 25px rgba(0, 0, 0, 0.15)",
     "textAlign": "center",
-    "width": "22%",
     "color": "#ffffff",
     "border": "none"
 }
 
-# Layout
-app.layout = html.Div([
-    html.H1("🌍 Life Expectancy Insights Dashboard By Group i", style={
+app.layout = dbc.Container([
+    html.H1("\ud83c\udf0d Life Expectancy Insights Dashboard By Group i", style={
         'textAlign': 'center',
         'background': f'linear-gradient(135deg, {colors["primary"]} 0%, {colors["secondary"]} 100%)',
         'color': '#ffffff',
@@ -61,82 +56,53 @@ app.layout = html.Div([
         'fontWeight': 'bold'
     }),
 
-    # Summary cards
-    html.Div([
-        html.Div([
-            html.H4("Average Life Expectancy", style={'color': '#ffffff', 'fontSize': '1.1em'}),
-            html.P(f"{global_avg_life:.2f} years", style={'color': '#ffffff', 'fontSize': '1.5em', 'fontWeight': 'bold'})
-        ], style={**card_style, 'background': f'linear-gradient(135deg, {colors["success"]} 0%, {colors["accent"]} 100%)'}),
+    dbc.Row([
+        dbc.Col(html.Div([
+            html.H4("Average Life Expectancy"),
+            html.P(f"{global_avg_life:.2f} years", style={'fontSize': '1.5em', 'fontWeight': 'bold'})
+        ], style={**card_style, 'background': f'linear-gradient(135deg, {colors["success"]} 0%, {colors["accent"]} 100%)'}), xs=12, sm=6, md=3),
 
-        html.Div([
-            html.H4(" Highest Life Expectancy Country", style={'color': '#ffffff', 'fontSize': '1.1em'}),
-            html.P(highest_life_country, style={'color': '#ffffff', 'fontSize': '1.3em', 'fontWeight': 'bold'})
-        ], style={**card_style, 'background': f'linear-gradient(135deg, {colors["warning"]} 0%, {colors["success"]} 100%)'}),
+        dbc.Col(html.Div([
+            html.H4("Highest Life Expectancy Country"),
+            html.P(highest_life_country, style={'fontSize': '1.3em', 'fontWeight': 'bold'})
+        ], style={**card_style, 'background': f'linear-gradient(135deg, {colors["warning"]} 0%, {colors["success"]} 100%)'}), xs=12, sm=6, md=3),
 
-        html.Div([
-            html.H4(" Highest Adult Mortality", style={'color': '#ffffff', 'fontSize': '1.1em'}),
-            html.P(highest_mortality_country, style={'color': '#ffffff', 'fontSize': '1.3em', 'fontWeight': 'bold'})
-        ], style={**card_style, 'background': f'linear-gradient(135deg, {colors["danger"]} 0%, {colors["warning"]} 100%)'}),
+        dbc.Col(html.Div([
+            html.H4("Highest Adult Mortality"),
+            html.P(highest_mortality_country, style={'fontSize': '1.3em', 'fontWeight': 'bold'})
+        ], style={**card_style, 'background': f'linear-gradient(135deg, {colors["danger"]} 0%, {colors["warning"]} 100%)'}), xs=12, sm=6, md=3),
 
-        html.Div([
-            html.H4("Lowest GDP Country", style={'color': '#ffffff', 'fontSize': '1.1em'}),
-            html.P(lowest_gdp_country, style={'color': '#ffffff', 'fontSize': '1.3em', 'fontWeight': 'bold'})
-        ], style={**card_style, 'background': f'linear-gradient(135deg, {colors["secondary"]} 0%, {colors["primary"]} 100%)'})
-    ], style={"display": "flex", "justifyContent": "space-around"}),
+        dbc.Col(html.Div([
+            html.H4("Lowest GDP Country"),
+            html.P(lowest_gdp_country, style={'fontSize': '1.3em', 'fontWeight': 'bold'})
+        ], style={**card_style, 'background': f'linear-gradient(135deg, {colors["secondary"]} 0%, {colors["primary"]} 100%)'}), xs=12, sm=6, md=3)
+    ], className="mb-4"),
 
-    html.Br(),
+    dbc.Row([
+        dbc.Col([
+            html.Label("Select Country:", style={
+                "fontWeight": "bold", "fontSize": "18px", "color": colors['primary']
+            }),
+            dcc.Dropdown(
+                options=[{"label": c, "value": c} for c in sorted(df["Country"].unique())],
+                value="Uganda",
+                id="country-dropdown",
+                placeholder="Choose a country",
+                style={"fontSize": "16px", "borderRadius": "10px", "border": f"2px solid {colors['accent']}"}
+            )
+        ], width=12)
+    ], className="mb-4"),
 
-    html.Div([
-        html.Label("Select Country:", style={
-            "fontWeight": "bold", 
-            "fontSize": "18px", 
-            "color": colors['primary'],
-            "marginBottom": "10px"
-        }),
-        dcc.Dropdown(
-            options=[{"label": c, "value": c} for c in sorted(df["Country"].unique())],
-            value="Uganda",
-            id="country-dropdown",
-            placeholder="Choose a country",
-            style={
-                "fontSize": "16px",
-                "borderRadius": "10px",
-                "border": f"2px solid {colors['accent']}"
-            }
-        ),
-    ], style={
-        "width": "50%", 
-        "margin": "auto", 
-        "marginBottom": "30px",
-        "padding": "20px",
-        "backgroundColor": colors['card'],
-        "borderRadius": "15px",
-        "boxShadow": "0px 5px 15px rgba(0, 0, 0, 0.1)"
-    }),
+    dbc.Row([dbc.Col(dcc.Graph(id="life-expectancy-trend"), width=12)]),
 
-    html.Br(),
+    dbc.Row([
+        dbc.Col(dcc.Graph(id="scatter-gdp-schooling"), xs=12, md=6),
+        dbc.Col(dcc.Graph(id="heatmap-correlation"), xs=12, md=6)
+    ], className="mb-4"),
 
-    dcc.Graph(id="life-expectancy-trend", config={"displayModeBar": False}),
+    dbc.Row([dbc.Col(dcc.Graph(id="ranked-life-expectancy"), width=12)]),
 
-    html.Div([
-        html.Div([
-            dcc.Graph(id="scatter-gdp-schooling", config={"displayModeBar": False})
-        ], style={"width": "50%", "padding": "10px"}),
-
-        html.Div([
-            dcc.Graph(id="heatmap-correlation", config={"displayModeBar": False})
-        ], style={"width": "50%", "padding": "10px"})
-    ], style={"display": "flex", "flexWrap": "wrap"}),
-
-    html.Br(),
-
-    html.Div([
-        dcc.Graph(id="ranked-life-expectancy", config={"displayModeBar": False})
-    ], style={"width": "100%", "padding": "10px"}),
-
-    html.Br(),
-
-    dcc.Graph(
+    dbc.Row([dbc.Col(dcc.Graph(
         id="choropleth-map",
         figure=px.choropleth(
             latest_df,
@@ -146,7 +112,7 @@ app.layout = html.Div([
             title=" Life Expectancy by Country (Choropleth)",
             color_continuous_scale="Plasma"
         )
-    ),
+    ), width=12)]),
 
     html.Footer(
         "© 2025 Group i – Life Expectancy Analysis Dashboard | Makerere University",
@@ -161,13 +127,13 @@ app.layout = html.Div([
             "borderRadius": "15px 15px 0 0"
         }
     )
-
-], style={
+], fluid=True, style={
     "padding": "20px",
     "background": f"linear-gradient(135deg, {colors['background']} 0%, #e0f2fe 100%)",
     "fontFamily": "Segoe UI, Tahoma, Geneva, Verdana, sans-serif",
     "minHeight": "100vh"
 })
+
 
 @app.callback(Output("life-expectancy-trend", "figure"), Input("country-dropdown", "value"))
 def update_life_expectancy_plot(selected_country):
@@ -185,6 +151,7 @@ def update_life_expectancy_plot(selected_country):
         margin=dict(l=20, r=20, t=60, b=20)
     )
     return fig
+
 
 @app.callback(Output("scatter-gdp-schooling", "figure"), Input("country-dropdown", "value"))
 def scatter_gdp_schooling(_):
@@ -205,6 +172,7 @@ def scatter_gdp_schooling(_):
     fig.update_traces(marker=dict(size=5))
     return fig
 
+
 @app.callback(Output("heatmap-correlation", "figure"), Input("country-dropdown", "value"))
 def heatmap_correlation(_):
     corr = df.select_dtypes(include='number').corr()
@@ -218,6 +186,7 @@ def heatmap_correlation(_):
         font=dict(color=colors['text'])
     )
     return fig
+
 
 @app.callback(Output("ranked-life-expectancy", "figure"), Input("country-dropdown", "value"))
 def ranked_life_expectancy(_):
@@ -234,6 +203,7 @@ def ranked_life_expectancy(_):
     )
     fig.update_traces(texttemplate='%{text:.1f}', textposition='outside')
     return fig
+
 
 if __name__ == "__main__":
     app.run(debug=True)
